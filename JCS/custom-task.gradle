@@ -1,0 +1,33 @@
+def DEPLOYABLE_NAME = 'jcs-test'
+def TOMCAT_HOME = ''
+def DEPLOYMENT_DIR = ''
+def DEPLOYABLE_TYPE = ''
+
+task tomcat() {
+    TOMCAT_HOME = 'C:/Vk/Server/apache-tomcat-9.0.63/'
+    DEPLOYMENT_DIR = 'webapps'
+    DEPLOYABLE_TYPE = 'war'
+}
+
+task startTomcat(type: Exec) {
+    workingDir(TOMCAT_HOME + 'bin')
+    commandLine('cmd', '/c', 'start', 'catalina.bat', 'jpda', 'run')
+}
+
+task stopTomcat(type: Exec) {
+    workingDir(TOMCAT_HOME + 'bin')
+    commandLine('cmd', '/c', 'start', 'catalina.bat', 'stop')
+}
+
+task copyDeployable(type: Copy) {
+    from 'build/libs/' + DEPLOYABLE_NAME + '.' + DEPLOYABLE_TYPE
+    into TOMCAT_HOME + DEPLOYMENT_DIR
+}
+
+task deployAndStart() {
+    dependsOn('build', 'copyDeployable', 'startTomcat')
+
+//    tasks.findByName('build').mustRunAfter('stopTomcat')
+    tasks.findByName('copyDeployable').mustRunAfter('build')
+    tasks.findByName('startTomcat').mustRunAfter('copyDeployable')
+}
